@@ -1,39 +1,212 @@
 {
   "name": "ai-code-analyzer",
-  "displayName": "ai-code-analyzer",
-  "description": "AI powered code analyzer",
-  "version": "0.0.1",
+  "displayName": "CodeSense - AI Multi-File Code Analyzer",
+  "publisher": "codesense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aaf-codes/code-sense"
+  },
+  "description": "Smart multi-language whole-codebase error analyzer with 7-part Cause & Fix inline squiggles, cross-file impact detection, and AI quick fixes.",
+  "version": "1.0.0",
   "engines": {
-    "vscode": "^1.120.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
-    "Other"
+    "Linters",
+    "Programming Languages",
+    "Testing"
   ],
   "activationEvents": [
-    "onCommand:ai-code-analyzer.helloWorld"
+    "onStartupFinished",
+    "onView:codesense.errorMapView",
+    "onView:codesense.issuesView",
+    "onView:codesense.graphView",
+    "onView:codesense.themeStudioView",
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:java",
+    "onLanguage:html",
+    "onLanguage:css"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "ai-code-analyzer.helloWorld",
-        "title": "Analyze code"
+        "command": "codesense.analyzeCurrentFile",
+        "title": "CodeSense: Analyze Current File (Inline Squiggles & Highlights)",
+        "icon": "$(play)"
+      },
+      {
+        "command": "codesense.analyzeWorkspace",
+        "title": "CodeSense: Analyze Entire Workspace (Multi-File Graph)",
+        "icon": "$(file-submodule)"
+      },
+      {
+        "command": "codesense.clearIssues",
+        "title": "CodeSense: Clear All Diagnostics",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "codesense.setApiKey",
+        "title": "CodeSense: Configure Gemini API Key",
+        "icon": "$(key)"
+      },
+      {
+        "command": "codesense.showGraph",
+        "title": "CodeSense: Focus Codebase Graph View",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "codesense.fixWithAI",
+        "title": "CodeSense: Fix with AI (Review Diff)",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "codesense.openThemeStudio",
+        "title": "CodeSense: Open Theme Studio",
+        "icon": "$(paintcan)"
+      },
+      {
+        "command": "codesense.selectTheme",
+        "title": "CodeSense: Switch Theme (Theme Studio)",
+        "icon": "$(color-mode)"
+      },
+      {
+        "command": "codesense.resetTheme",
+        "title": "CodeSense: Reset Theme to Default",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "codesense.applyThemeFromStudio",
+        "title": "CodeSense: Apply Selected Theme"
+      },
+      {
+        "command": "codesense.fixTerminalError",
+        "title": "CodeSense: Fix Terminal Error with AI (Review Diff)",
+        "icon": "$(terminal)"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codesense.fixTerminalError",
+          "group": "7_modification"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "codesense.fixTerminalError",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "codesense.fixTerminalError",
+          "when": "view == codesense.issuesView || view == codesense.errorMapView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "codesense.fixWithAI",
+          "when": "viewItem == codeSenseIssueItem",
+          "group": "inline"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codesense-sidebar",
+          "title": "CodeSense",
+          "icon": "$(eye)"
+        }
+      ]
+    },
+    "views": {
+      "codesense-sidebar": [
+        {
+          "id": "codesense.themeStudioView",
+          "name": "Theme Studio"
+        },
+        {
+          "id": "codesense.errorMapView",
+          "name": "Project Error Map"
+        },
+        {
+          "id": "codesense.issuesView",
+          "name": "Detected Issues (Cause & Fix)"
+        },
+        {
+          "id": "codesense.graphView",
+          "name": "Multi-File Dependency Graph"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "CodeSense",
+      "properties": {
+        "codesense.theme": {
+          "type": "string",
+          "default": "default",
+          "enum": [
+            "default",
+            "solar-flare",
+            "neon-tokyo",
+            "crimson-night",
+            "latte-cream"
+          ],
+          "enumDescriptions": [
+            "Standard native VS Code theme",
+            "Solar Flare – Sunset orange, violet & warm dark",
+            "Neon Tokyo – Neon pink, electric cyan & deep black",
+            "Crimson Night – Burgundy, wine red, rose & charcoal",
+            "Latte Cream – Warm cream, coffee brown & soft beige"
+          ],
+          "description": "Selected visual theme for CodeSense error cards, error map, and AI tools."
+        },
+        "codesense.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Google Gemini API Key for semantic AI code analysis."
+        },
+        "codesense.geminiModel": {
+          "type": "string",
+          "default": "gemini-2.5-flash",
+          "enum": [
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
+            "gemini-flash-latest"
+          ],
+          "description": "Gemini Model to use for deep code analysis."
+        },
+        "codesense.analyzeOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically run CodeSense analysis when saving a file."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && node -e \"require('fs').copyFileSync('src/py_analyzer.py', 'out/py_analyzer.py')\"",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
+    "verify": "node demo/verify.js",
+    "package": "vsce package --allow-missing-repository",
+    "install-ext": "code --install-extension ai-code-analyzer-0.1.0.vsix",
     "test": "vscode-test"
   },
   "devDependencies": {
     "@types/babel__traverse": "^7.28.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "@types/vscode": "^1.120.0",
+    "@types/vscode": "^1.80.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.3",
@@ -44,9 +217,6 @@
     "@babel/parser": "^7.29.7",
     "@babel/traverse": "^7.29.7",
     "@google/generative-ai": "^0.24.1",
-    "dotenv": "^17.4.2",
-    "neo4j-driver": "^5.26.0",
-    "tree-sitter-javascript": "^0.25.0",
-    "web-tree-sitter": "^0.26.9"
+    "dotenv": "^17.4.2"
   }
 }
